@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: spring-artemis-producer-pipeline
+spec:
+  tasks:
+    - name: build-and-push
+      taskRef:
+        name: buildah
+      params:
+        - name: IMAGE
+          value: quay.io/usuario/spring-artemis-producer:v2
+        - name: CONTEXT
+          value: .
+    - name: deploy
+      runAfter:
+        - build-and-push
+      taskRef:
+        name: apply-manifest
+      params:
+        - name: manifest
+          value: ./deployment.yaml
