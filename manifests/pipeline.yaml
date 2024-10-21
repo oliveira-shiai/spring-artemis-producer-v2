@@ -3,20 +3,43 @@ kind: Pipeline
 metadata:
   name: spring-artemis-producer-pipeline
 spec:
+  params:
+    - name: gitrevision
+      type: string
+      description: The git revision to fetch
+      default: master
+    - name: gitrepositoryurl
+      type: string
+      description: The URL of the Git repository
   tasks:
-    - name: build-and-push
+    - name: clone-repo
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.gitrepositoryurl)
+        - name: revision
+          value: $(params.gitrevision)
+        - name: subdirectory
+          value: ""
+        - name: deleteExisting
+          value: "true"
+    - name: build-app
+      taskRef:
+        name: maven
+      params:
+        - name: GOALS
+          value: "clean install"
+    - name: build-image
       taskRef:
         name: buildah
       params:
         - name: IMAGE
-          value: quay.io/usuario/spring-artemis-producer:v2
-        - name: CONTEXT
-          value: .
-    - name: deploy
-      runAfter:
-        - build-and-push
+          value: image-registry.openshift-image-registry.svc:5000/<seu-projeto>/spring-artemis-producer:latest
+    - name: deploy-app
       taskRef:
-        name: apply-manifest
+        name: kubernetes-actions
       params:
-        - name: manifest
-          value: ./deployment.yaml
+        - name: script
+          value: |
+            kubectl apply -f ./manifests/deployment.yaml
