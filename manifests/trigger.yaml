@@ -1,0 +1,50 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: spring-artemis-producer-template
+spec:
+  params:
+    - name: gitrevision
+      description: The git revision
+      default: master
+    - name: gitrepositoryurl
+      description: The git repository URL
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: spring-artemis-producer-pipeline-run-
+      spec:
+        pipelineRef:
+          name: spring-artemis-producer-pipeline
+        params:
+          - name: gitrevision
+            value: $(params.gitrevision)
+          - name: gitrepositoryurl
+            value: $(params.gitrepositoryurl)
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: spring-artemis-producer-binding
+spec:
+  params:
+    - name: gitrevision
+      value: $(body.head_commit.id)
+    - name: gitrepositoryurl
+      value: $(body.repository.url)
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: spring-artemis-producer-listener
+spec:
+  serviceAccountName: pipeline  # Use a service account with permission
+  triggers:
+    - name: spring-artemis-producer-trigger
+      binding:
+        ref: spring-artemis-producer-binding
+      template:
+        ref: spring-artemis-producer-template
