@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-artemis-producer
+  labels:
+    app: spring-artemis-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-artemis-producer
+  template:
+    metadata:
+      labels:
+        app: spring-artemis-producer
+    spec:
+      containers:
+      - name: spring-artemis-producer
+        image: quay.io/usuario/spring-artemis-producer:v2 # Atualize com sua imagem
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"  # Exemplo de configuração de perfil
+        - name: ARTEMIS_BROKER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: artemis-config
+              key: broker-url
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      restartPolicy: Always
