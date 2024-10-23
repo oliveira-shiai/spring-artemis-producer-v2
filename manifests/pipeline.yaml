@@ -67,7 +67,7 @@ spec:
       name: maven
     params:
     - name: MAVEN_IMAGE
-      value: image-registry.openshift-image-registry.svc:5000/quarkus-superheroes-user1/openjdk-17-runtime  # Imagem OpenJDK correta para build
+      value: image-registry.openshift-image-registry.svc:5000/app-spring/openjdk-17-runtime
     - name: CONTEXT_DIR
       value: $(params.SOURCE_GIT_CONTEXT_DIR)
     - name: GOALS
