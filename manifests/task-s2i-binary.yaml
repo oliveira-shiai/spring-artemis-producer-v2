@@ -22,7 +22,8 @@ spec:
     default: spring-artemis-producer
   steps:
   - name: s2i-build
-    image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+    #image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+    image: image-registry.openshift-image-registry.svc:5000/app-spring/openjdk-17-runtime
     script: |
       #!/usr/bin/env bash
 
