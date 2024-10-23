@@ -3,8 +3,8 @@ kind: PipelineRun
 metadata:
   name: spring-artemis-producer-pipelinerun
   namespace: app-spring  # Namespace correto
+  serviceAccountName: openshift-pipelines-operator  
 spec:
-  serviceAccountName: openshift-pipelines-operator
   pipelineRef:
     name: spring-artemis-pipeline  # Nome da sua Pipeline
   params:
