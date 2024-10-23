@@ -5,40 +5,48 @@ metadata:
   namespace: app-spring
   labels:
     app: spring-artemis-producer
+  namespace: app-spring
+  labels:
+    app: spring-artemis-producer
+    app.kubernetes.io/component: spring-artemis-producer
+    app.kubernetes.io/instance: spring-artemis-producer
+    app.kubernetes.io/name: spring-artemis-producer
+    app.kubernetes.io/part-of: spring-artemis-producer
+    app.openshift.io/runtime: java
+    app.openshift.io/runtime-version: openjdk-17-ubi8
 spec:
-  replicas: 4
+  replicas: 1
   selector:
     matchLabels:
       app: spring-artemis-producer
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: spring-artemis-producer
+        deployment: spring-artemis-producer
+    spec:
+      containers:
+        - name: spring-artemis-producer
+          image: 'image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer:latest'
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8443
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 25%
       maxSurge: 25%
-  template:
-    metadata:
-      labels:
-        app: spring-artemis-producer
-    spec:
-      containers:
-      - name: spring-artemis-producer
-        # Usando a imagem base do repositório interno do OpenShift
-        image: image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer:latest
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: "prod"  # Exemplo de configuração de perfil
-        # - name: ARTEMIS_BROKER_URL
-          # valueFrom:
-            # configMapKeyRef:
-              # name: artemis-config
-              # key: broker-url
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
-      restartPolicy: Always
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
