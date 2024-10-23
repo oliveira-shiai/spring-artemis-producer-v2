@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: spring-artemis-producer
+  namespace: app-spring
   labels:
     app: spring-artemis-producer
 spec:
@@ -12,8 +13,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 25%  
-      maxSurge: 25%       
+      maxUnavailable: 25%
+      maxSurge: 25%
   template:
     metadata:
       labels:
@@ -21,17 +22,18 @@ spec:
     spec:
       containers:
       - name: spring-artemis-producer
-        image: quay.io/usuario/spring-artemis-producer:v2 # Atualize com sua imagem
+        # Usando a imagem base do repositório interno do OpenShift
+        image: image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer:latest
         ports:
         - containerPort: 8080
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "prod"  # Exemplo de configuração de perfil
-        - name: ARTEMIS_BROKER_URL
-          valueFrom:
-            configMapKeyRef:
-              name: artemis-config
-              key: broker-url
+        # - name: ARTEMIS_BROKER_URL
+          # valueFrom:
+            # configMapKeyRef:
+              # name: artemis-config
+              # key: broker-url
         resources:
           requests:
             memory: "512Mi"
