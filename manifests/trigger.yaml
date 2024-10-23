@@ -4,6 +4,7 @@ metadata:
   name: pipeline-trigger-template
   namespace: app-spring  
 spec:
+  serviceAccountName: openshift-pipelines-operator
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -29,6 +30,7 @@ metadata:
   name: git-trigger-binding
   namespace: app-spring  
 spec:
+serviceAccountName: openshift-pipelines-operator
   params:
     - name: git-revision
       value: $(body.head_commit.id)
@@ -42,10 +44,10 @@ metadata:
   name: git-event-listener
   namespace: app-spring  
 spec:
+serviceAccountName: openshift-pipelines-operator
   triggers:
     - name: spring-artemis-trigger
       template:
         ref: pipeline-trigger-template  # Nome do TriggerTemplate
       bindings:
         - ref: git-trigger-binding       # Nome do TriggerBinding
-  serviceAccountName: openshift-pipelines-operator  # Verifique se esta ServiceAccount existe e tem permissões adequadas
