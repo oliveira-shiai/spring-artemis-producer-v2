@@ -1,0 +1,22 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: spring-artemis-producer-build
+  namespace: app-spring  # Substitua pelo seu namespace
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/oliveira-shiai/spring-artemis-producer-v2'  # URL do seu repositório
+    contextDir: '.'  # Diretório do contexto de build
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: ubi8-openjdk-11-runtime:latest  # Baseando-se na imagem UBI
+      incremental: true
+  output:
+    to:
+      kind: ImageStreamTag
+      name: spring-artemis-producer:latest
