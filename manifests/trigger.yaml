@@ -2,8 +2,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: pipeline-trigger-template
-  namespace: app-spring  
-  serviceAccountName: openshift-pipelines-operator
+  namespace: app-spring
 spec:
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
