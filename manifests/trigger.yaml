@@ -29,7 +29,7 @@ metadata:
   name: git-trigger-binding
   namespace: app-spring  
 spec:
-serviceAccountName: openshift-pipelines-operator
+serviceAccountName: pipeline
   params:
     - name: git-revision
       value: $(body.head_commit.id)
@@ -43,7 +43,7 @@ metadata:
   name: git-event-listener
   namespace: app-spring  
 spec:
-serviceAccountName: openshift-pipelines-operator
+serviceAccountName: pipeline
   triggers:
     - name: spring-artemis-trigger
       template:
