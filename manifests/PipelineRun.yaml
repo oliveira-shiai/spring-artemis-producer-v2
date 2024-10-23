@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: spring-artemis-producer-pipelinerun
+  namespace: app-spring
+spec:
+  pipelineRef:
+    name: spring-artemis-pipeline
+  params:
+    - name: git-url
+      value: https://github.com/oliveira-shiai/spring-artemis-producer-v2  # URL do seu repositório Git
+    - name: git-revision
+      value: main  # O branch principal a ser utilizado
+    - name: IMAGE
+      value: image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer:latest  # Imagem no registro interno do OpenShift
+  workspaces:
+    - name: shared-workspace
+      persistentVolumeClaim:
+        claimName: pvc-workspace  # PVC que deve ser criado para armazenar o workspace compartilhado
+  timeout: "1h"  # Defina um tempo limite para o pipeline (opcional)
