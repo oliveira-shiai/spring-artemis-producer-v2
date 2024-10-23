@@ -2,6 +2,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: pipeline-trigger-template
+  namespace: app-spring  
 spec:
   resourcetemplates:
   - apiVersion: tekton.dev/v1beta1
@@ -26,6 +27,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
   name: git-trigger-binding
+  namespace: app-spring  
 spec:
   params:
     - name: git-revision
@@ -38,6 +40,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: git-event-listener
+  namespace: app-spring  
 spec:
   triggers:
     - name: spring-artemis-trigger
