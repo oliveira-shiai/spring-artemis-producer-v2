@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: spring-artemis-pipeline
-  namespace: app-spring  # Namespace correto
+  namespace: app-spring  # Ajustado para o namespace correto
 spec:
   params:
   - name: APP_NAME
@@ -70,7 +70,7 @@ spec:
     - name: CONTEXT_DIR
       value: $(params.SOURCE_GIT_CONTEXT_DIR)
     - name: GOALS
-      value: "clean package -DskipTests"  # Metas do Maven
+      value: "clean package -DskipTests"  # Metas do Maven como uma única string
     workspaces:
     - name: source
       workspace: app-source
