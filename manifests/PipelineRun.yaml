@@ -3,7 +3,6 @@ kind: PipelineRun
 metadata:
   name: spring-artemis-producer-pipelinerun
   namespace: app-spring  # Namespace correto
-  serviceAccountName: pipeline  
 spec:
   pipelineRef:
     name: spring-artemis-pipeline  # Nome da sua Pipeline
