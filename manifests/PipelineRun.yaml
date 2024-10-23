@@ -5,6 +5,7 @@ metadata:
   namespace: app-spring  # Namespace correto
 spec:
   pipelineRef:
+    serviceAccountName: openshift-pipelines-operator  
     name: spring-artemis-pipeline  # Nome da sua Pipeline
   params:
     - name: git-url
