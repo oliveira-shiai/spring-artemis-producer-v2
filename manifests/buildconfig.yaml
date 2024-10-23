@@ -23,7 +23,7 @@ spec:
       from:
         kind: ImageStreamTag
         namespace: openshift
-        name: 'java:openjdk-17-ubi8'
+        name: 'openjdk-17-runtime:1.20-3.1729094555'
   postCommit: {}
   source:
     type: Git
