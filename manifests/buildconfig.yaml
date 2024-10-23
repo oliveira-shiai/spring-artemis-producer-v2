@@ -8,6 +8,12 @@ metadata:
   namespace: app-spring
   labels:
     app: spring-artemis-producer
+    app.kubernetes.io/component: spring-artemis-producer
+    app.kubernetes.io/instance: spring-artemis-producer
+    app.kubernetes.io/name: spring-artemis-producer
+    app.kubernetes.io/part-of: spring-artemis-producer
+    app.openshift.io/runtime: java
+    app.openshift.io/runtime-version: openjdk-17-ubi8
 spec:
   nodeSelector: null
   output:
@@ -23,7 +29,7 @@ spec:
       from:
         kind: ImageStreamTag
         namespace: openshift
-        name: 'openjdk-17-runtime:1.20-3.1729094555'
+        name: 'java:openjdk-17-ubi8'
   postCommit: {}
   source:
     type: Git
