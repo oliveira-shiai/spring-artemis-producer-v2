@@ -3,7 +3,6 @@ kind: Pipeline
 metadata:
   name: spring-artemis-pipeline
   namespace: app-spring
-  serviceAccountName: pipeline
 spec:
   tasks:
     - name: build-image
