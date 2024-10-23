@@ -1,51 +1,21 @@
-kind: BuildConfig
+---
 apiVersion: build.openshift.io/v1
+kind: BuildConfig
 metadata:
-  annotations:
-    app.openshift.io/vcs-ref: ''
-    app.openshift.io/vcs-uri: 'https://github.com/oliveira-shiai/spring-artemis-producer-v2.git'
   name: spring-artemis-producer
   namespace: app-spring
-  labels:
-    app: spring-artemis-producer
-    app.kubernetes.io/component: spring-artemis-producer
-    app.kubernetes.io/instance: spring-artemis-producer
-    app.kubernetes.io/name: spring-artemis-producer
-    app.kubernetes.io/part-of: spring-artemis-producer
-    app.openshift.io/runtime: java
-    app.openshift.io/runtime-version: openjdk-17-ubi8
 spec:
-  nodeSelector: null
   output:
     to:
       kind: ImageStreamTag
-      name: 'spring-artemis-producer:latest'
-  resources: {}
-  successfulBuildsHistoryLimit: 5
-  failedBuildsHistoryLimit: 5
+      name: spring-artemis-producer:latest
+  source:
+    binary: {}
+    type: Binary
   strategy:
-    type: Source
     sourceStrategy:
       from:
         kind: ImageStreamTag
+        name: ubi8-openjdk-17:1.12
         namespace: openshift
-        name: 'java:openjdk-17-ubi8'
-  postCommit: {}
-  source:
-    type: Git
-    git:
-      uri: 'https://github.com/oliveira-shiai/spring-artemis-producer-v2.git'
-    contextDir: /
-  triggers:
-    - type: Generic
-      generic:
-        secretReference:
-          name: spring-artemis-producer-generic-webhook-secret
-    - type: GitHub
-      github:
-        secretReference:
-          name: spring-artemis-producer-github-webhook-secret
-    - type: ImageChange
-      imageChange: {}
-    - type: ConfigChange
-  runPolicy: Serial
+    type: Source
