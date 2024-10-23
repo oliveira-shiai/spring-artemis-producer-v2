@@ -16,7 +16,7 @@ spec:
     default: https://github.com/oliveira-shiai/spring-artemis-producer-v2  # URL do repositório da sua aplicação
   - name: SOURCE_GIT_REVISION
     type: string
-    default: main  # Revisão padrão do Git
+    default: master  # Revisão padrão do Git
     description: The application git repository revision
   - name: SOURCE_GIT_CONTEXT_DIR
     type: string
@@ -33,7 +33,7 @@ spec:
   - name: KUSTOMIZE_GIT_REVISION
     type: string
     description: The kustomize git repository revision
-    default: main  # Revisão do Git para GitOps
+    default: master  # Revisão do Git para GitOps
   - name: KUSTOMIZE_GIT_CONTEXT_DIR
     type: string
     description: The subdirectory in the kustomize git repository
