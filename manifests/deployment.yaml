@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: spring-artemis-producer
   namespace: app-spring
-  serviceAccountName: openshift-pipelines-operator  
+  serviceAccountName: pipeline  
   labels:
     app: spring-artemis-producer
 spec:
