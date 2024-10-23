@@ -1,50 +1,48 @@
-apiVersion: triggers.tekton.dev/v1beta1
+apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
-  name: spring-artemis-producer-template
+  name: pipeline-trigger-template
 spec:
-  params:
-    - name: gitrevision
-      description: The git revision
-      default: master
-    - name: gitrepositoryurl
-      description: The git repository URL
   resourcetemplates:
-    - apiVersion: tekton.dev/v1beta1
-      kind: PipelineRun
-      metadata:
-        generateName: spring-artemis-producer-pipeline-run-
-      spec:
-        pipelineRef:
-          name: spring-artemis-producer-pipeline
-        params:
-          - name: gitrevision
-            value: $(params.gitrevision)
-          - name: gitrepositoryurl
-            value: $(params.gitrepositoryurl)
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: spring-artemis-pipeline-run-
+    spec:
+      pipelineRef:
+        name: spring-artemis-pipeline  # Nome da Pipeline
+      workspaces:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: pvc-workspace
+      params:
+        - name: git-revision
+          value: $(tt.params.git-revision)
+        - name: git-repository-url
+          value: $(tt.params.git-repository-url)
 
 ---
-apiVersion: triggers.tekton.dev/v1beta1
+apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
-  name: spring-artemis-producer-binding
+  name: git-trigger-binding
 spec:
   params:
-    - name: gitrevision
+    - name: git-revision
       value: $(body.head_commit.id)
-    - name: gitrepositoryurl
-      value: $(body.repository.url)
+    - name: git-repository-url
+      value: $(body.repository.git_url)
 
 ---
-apiVersion: triggers.tekton.dev/v1beta1
+apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
-  name: spring-artemis-producer-listener
+  name: git-event-listener
 spec:
-  serviceAccountName: pipeline  # Use a service account with permission
   triggers:
-    - name: spring-artemis-producer-trigger
-      binding:
-        ref: spring-artemis-producer-binding
+    - name: spring-artemis-trigger
       template:
-        ref: spring-artemis-producer-template
+        ref: pipeline-trigger-template  # Nome do TriggerTemplate
+      bindings:
+        - ref: git-trigger-binding       # Nome do TriggerBinding
+  serviceAccountName: pipeline
