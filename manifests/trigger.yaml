@@ -35,7 +35,6 @@ metadata:
   name: git-trigger-binding
   namespace: app-spring  
 spec:
-  serviceAccountName: pipeline  # Corrigido para ter a indentação correta
   params:
     - name: git-revision
       value: $(body.head_commit.id)  # Captura o ID do commit
@@ -49,7 +48,6 @@ metadata:
   name: git-event-listener
   namespace: app-spring  
 spec:
-  serviceAccountName: pipeline  # Corrigido para ter a indentação correta
   triggers:
     - name: spring-artemis-trigger
       template:
