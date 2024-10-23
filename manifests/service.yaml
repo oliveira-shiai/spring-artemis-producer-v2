@@ -3,7 +3,6 @@ kind: Service
 metadata:
   name: spring-artemis-producer-service
   namespace: app-spring  # Namespace definido corretamente
-  serviceAccountName: openshift-pipelines-operator
   labels:
     app: spring-artemis-producer
 spec:
@@ -20,7 +19,6 @@ kind: Route
 metadata:
   name: spring-artemis-producer-route
   namespace: app-spring  # Namespace definido corretamente
-  serviceAccountName: openshift-pipelines-operator
 spec:
   to:
     kind: Service
