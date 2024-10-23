@@ -4,8 +4,8 @@ metadata:
   name: spring-artemis-producer-pipelinerun
   namespace: app-spring  # Namespace correto
 spec:
+  serviceAccountName: openshift-pipelines-operator
   pipelineRef:
-    serviceAccountName: openshift-pipelines-operator  
     name: spring-artemis-pipeline  # Nome da sua Pipeline
   params:
     - name: git-url
