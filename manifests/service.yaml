@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: spring-artemis-producer-service
+  namespace: app-spring
   labels:
     app: spring-artemis-producer
 spec:
@@ -11,3 +12,18 @@ spec:
   selector:
     app: spring-artemis-producer
   type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: spring-artemis-producer-route
+  namespace: app-spring
+spec:
+  to:
+    kind: Service
+    name: spring-artemis-producer-service
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge  # Opção de TLS com terminação edge
+  wildcardPolicy: None
