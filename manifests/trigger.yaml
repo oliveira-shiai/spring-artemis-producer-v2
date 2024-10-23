@@ -5,22 +5,22 @@ metadata:
   namespace: app-spring  
 spec:
   resourcetemplates:
-  - apiVersion: tekton.dev/v1beta1
-    kind: PipelineRun
-    metadata:
-      generateName: spring-artemis-pipeline-run-
-    spec:
-      pipelineRef:
-        name: spring-artemis-pipeline  # Nome da Pipeline
-      workspaces:
-        - name: shared-data
-          persistentVolumeClaim:
-            claimName: pvc-workspace
-      params:
-        - name: git-revision
-          value: $(tt.params.git-revision)
-        - name: git-repository-url
-          value: $(tt.params.git-repository-url)
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: spring-artemis-pipeline-run-
+      spec:
+        pipelineRef:
+          name: spring-artemis-pipeline  # Nome da Pipeline
+        workspaces:
+          - name: shared-data
+            persistentVolumeClaim:
+              claimName: pvc-workspace  # Assegure-se que esse PVC exista
+        params:
+          - name: git-revision
+            value: $(tt.params.git-revision)
+          - name: git-repository-url
+            value: $(tt.params.git-repository-url)
 
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
@@ -48,4 +48,4 @@ spec:
         ref: pipeline-trigger-template  # Nome do TriggerTemplate
       bindings:
         - ref: git-trigger-binding       # Nome do TriggerBinding
-  serviceAccountName: pipeline
+  serviceAccountName: pipeline  # Verifique se esta ServiceAccount existe e tem permissões adequadas
