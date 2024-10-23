@@ -1,56 +1,63 @@
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: pipeline-trigger-template
+  name: trigger-template-spring-artemis-producer
   namespace: app-spring
-spec:
-  params:  # Adicionada a seção de parâmetros
-    - name: git-revision
-      description: A referência do Git que deve ser usada
-    - name: git-repository-url
-      description: A URL do repositório Git
-  resourcetemplates:
-    - apiVersion: tekton.dev/v1beta1
-      kind: PipelineRun
-      metadata:
-        generateName: spring-artemis-pipeline-run-
-      spec:
-        pipelineRef:
-          name: spring-artemis-pipeline  # Nome da Pipeline
-        workspaces:
-          - name: shared-data
-            persistentVolumeClaim:
-              claimName: pvc-workspace  # Assegure-se que esse PVC exista
-        params:
-          - name: git-revision
-            value: $(tt.params.git-revision)  # Referência agora declarada corretamente
-          - name: git-repository-url
-            value: $(tt.params.git-repository-url)  # Referência agora declarada corretamente
-
-
----
-apiVersion: triggers.tekton.dev/v1alpha1
-kind: TriggerBinding
-metadata:
-  name: git-trigger-binding
-  namespace: app-spring  
 spec:
   params:
     - name: git-revision
-      value: $(body.head_commit.id)  # Captura o ID do commit
-    - name: git-repository-url
-      value: $(body.repository.git_url)  # Captura a URL do repositório
+    - name: git-commit-message
+    - name: git-repo-url
+    - name: git-repo-name
+    - name: content-type
+    - name: pusher-name
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        annotations:
+          pipeline.openshift.io/started-by: admin
+        generateName: spring-artemis-producer-
+        labels:
+          app.kubernetes.io/instance: spring-artemis-producer
+          app.kubernetes.io/name: spring-artemis-producer
+          operator.tekton.dev/operand-name: openshift-pipelines-addons
+          pipeline.openshift.io/runtime: java
+          pipeline.openshift.io/runtime-version: openjdk-17-ubi8
+          pipeline.openshift.io/type: kubernetes
+          tekton.dev/pipeline: spring-artemis-producer
+        namespace: app-spring
+      spec:
+        params:
+          - name: APP_NAME
+            value: spring-artemis-producer
+          - name: GIT_REPO
+            value: 'https://github.com/oliveira-shiai/spring-artemis-producer-v2.git'
+          - name: GIT_REVISION
+            value: ''
+          - name: IMAGE_NAME
+            value: 'image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer-v-2-git'
+          - name: PATH_CONTEXT
+            value: .
+          - name: VERSION
+            value: openjdk-17-ubi8
+        pipelineRef:
+          name: spring-artemis-producer
+
 
 ---
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: git-event-listener
+  name: event-listener-producer
   namespace: app-spring  
 spec:
+  namespaceSelector: {}
+  resources: {}
+  serviceAccountName: pipeline
   triggers:
-    - name: spring-artemis-trigger
+    - bindings:
+        - kind: ClusterTriggerBinding
+          ref: github-push
       template:
-        ref: pipeline-trigger-template  # Nome do TriggerTemplate
-      bindings:
-        - ref: git-trigger-binding       # Nome do TriggerBinding
+        ref: trigger-template-spring-artemis-producer
