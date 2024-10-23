@@ -11,7 +11,7 @@ spec:
     - name: git-url
       value: https://github.com/oliveira-shiai/spring-artemis-producer-v2  # URL do seu repositório Git
     - name: git-revision
-      value: master  # O branch principal a ser utilizado
+      value: HEAD  # O branch principal a ser utilizado
     - name: IMAGE
       value: image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer:latest  # Imagem no registro interno do OpenShift
   workspaces:
