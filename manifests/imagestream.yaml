@@ -1,19 +1,5 @@
 apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
-  annotations:
-    app.openshift.io/vcs-ref: ''
-    app.openshift.io/vcs-uri: 'https://github.com/oliveira-shiai/spring-artemis-producer-v2.git'
   name: spring-artemis-producer
   namespace: app-spring
-  labels:
-    app: spring-artemis-producer-v-2-git
-    app.kubernetes.io/component: spring-artemis-producer-v-2-git
-    app.kubernetes.io/instance: spring-artemis-producer-v-2-git
-    app.kubernetes.io/name: spring-artemis-producer-v-2-git
-    app.kubernetes.io/part-of: spring-artemis-producer-v-2-git-app
-    app.openshift.io/runtime: java
-    app.openshift.io/runtime-version: openjdk-17-ubi8
-spec:
-  lookupPolicy:
-    local: false
