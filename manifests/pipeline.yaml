@@ -1,25 +1,78 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: spring-artemis-pipeline
+  name: spring-artemis-producer
   namespace: app-spring
+  labels:
+    app.kubernetes.io/instance: spring-artemis-producer
+    app.kubernetes.io/name: spring-artemis-producer
+    operator.tekton.dev/operand-name: openshift-pipelines-addons
+    pipeline.openshift.io/runtime: java
+    pipeline.openshift.io/runtime-version: openjdk-17-ubi8
+    pipeline.openshift.io/type: kubernetes  
 spec:
+  params:
+    - default: spring-artemis-producer
+      name: APP_NAME
+      type: string
+    - default: 'https://github.com/oliveira-shiai/spring-artemis-producer-v2.git'
+      name: GIT_REPO
+      type: string
+    - default: ''
+      name: GIT_REVISION
+      type: string
+    - default: 'image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer-v-2-git'
+      name: IMAGE_NAME
+      type: string
+    - default: .
+      name: PATH_CONTEXT
+      type: string
+    - default: openjdk-17-ubi8
+      name: VERSION
+      type: string
   tasks:
-    - name: build-image
+    - name: fetch-repository
+      params:
+        - name: url
+          value: $(params.GIT_REPO)
+        - name: revision
+          value: $(params.GIT_REVISION)
+        - name: subdirectory
+          value: ''
+        - name: deleteExisting
+          value: 'true'
       taskRef:
-        name: buildah
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: workspace
+    - name: build
       params:
         - name: IMAGE
-          value: image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer:latest
-        - name: DOCKERFILE
-          value: ./Dockerfile
-        - name: CONTEXT
-          value: .
-    - name: deploy-to-openshift
+          value: $(params.IMAGE_NAME)
+        - name: TLSVERIFY
+          value: 'false'
+        - name: PATH_CONTEXT
+          value: $(params.PATH_CONTEXT)
+        - name: VERSION
+          value: $(params.VERSION)
+      runAfter:
+        - fetch-repository
       taskRef:
-        name: openshift-client
+        kind: ClusterTask
+        name: s2i-java
+      workspaces:
+        - name: source
+          workspace: workspace
+    - name: deploy
       params:
         - name: SCRIPT
-          value: |
-            oc apply -f https://raw.githubusercontent.com/oliveira-shiai/spring-artemis-producer-v2/main/deployment.yaml
-            oc rollout status deployment/spring-artemis-deployment
+          value: oc rollout status deploy/$(params.APP_NAME)
+      runAfter:
+        - build
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+  workspaces:
+    - name: workspace
