@@ -2,28 +2,29 @@ apiVersion: v1
 kind: Service
 metadata:
   name: spring-artemis-producer-service
-  namespace: app-spring
+  namespace: app-spring  # Namespace definido corretamente
   labels:
     app: spring-artemis-producer
 spec:
   ports:
     - port: 8080
-      targetPort: 8080
+      targetPort: 8080  # O mesmo port que o container escuta
   selector:
-    app: spring-artemis-producer
-  type: ClusterIP
+    app: spring-artemis-producer  # Deve corresponder ao label do Deployment
+  type: ClusterIP  # Tipo do serviço
+
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: spring-artemis-producer-route
-  namespace: app-spring
+  namespace: app-spring  # Namespace definido corretamente
 spec:
   to:
     kind: Service
-    name: spring-artemis-producer-service
+    name: spring-artemis-producer-service  # Nome do serviço
   port:
-    targetPort: 8080
+    targetPort: 8080  # Port que o serviço escuta
   tls:
-    termination: edge  # Opção de TLS com terminação edge
-  wildcardPolicy: None
+    termination: edge  # Terminação TLS com edge
+  wildcardPolicy: None  # Políticas de wildcard
