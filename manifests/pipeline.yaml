@@ -1,78 +1,141 @@
-apiVersion: tekton.dev/v1
+---
+apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: spring-artemis-producer
-  namespace: app-spring
-  labels:
-    app.kubernetes.io/instance: spring-artemis-producer
-    app.kubernetes.io/name: spring-artemis-producer
-    operator.tekton.dev/operand-name: openshift-pipelines-addons
-    pipeline.openshift.io/runtime: java
-    pipeline.openshift.io/runtime-version: openjdk-17-ubi8
-    pipeline.openshift.io/type: kubernetes  
+  name: spring-artemis-pipeline
+  namespace: app-spring  # Ajustado para o namespace correto
 spec:
   params:
-    - default: spring-artemis-producer
-      name: APP_NAME
-      type: string
-    - default: 'https://github.com/oliveira-shiai/spring-artemis-producer-v2.git'
-      name: GIT_REPO
-      type: string
-    - default: ''
-      name: GIT_REVISION
-      type: string
-    - default: 'image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer-v-2-git'
-      name: IMAGE_NAME
-      type: string
-    - default: .
-      name: PATH_CONTEXT
-      type: string
-    - default: openjdk-17-ubi8
-      name: VERSION
-      type: string
-  tasks:
-    - name: fetch-repository
-      params:
-        - name: url
-          value: $(params.GIT_REPO)
-        - name: revision
-          value: $(params.GIT_REVISION)
-        - name: subdirectory
-          value: ''
-        - name: deleteExisting
-          value: 'true'
-      taskRef:
-        kind: ClusterTask
-        name: git-clone
-      workspaces:
-        - name: output
-          workspace: workspace
-    - name: build
-      params:
-        - name: IMAGE
-          value: $(params.IMAGE_NAME)
-        - name: TLSVERIFY
-          value: 'false'
-        - name: PATH_CONTEXT
-          value: $(params.PATH_CONTEXT)
-        - name: VERSION
-          value: $(params.VERSION)
-      runAfter:
-        - fetch-repository
-      taskRef:
-        kind: ClusterTask
-        name: s2i-java
-      workspaces:
-        - name: source
-          workspace: workspace
-    - name: deploy
-      params:
-        - name: SCRIPT
-          value: oc rollout status deploy/$(params.APP_NAME)
-      runAfter:
-        - build
-      taskRef:
-        kind: ClusterTask
-        name: openshift-client
+  - name: APP_NAME
+    type: string
+    description: The application deployment name
+    default: spring-artemis-producer  # Nome da sua aplicação
+  - name: SOURCE_GIT_URL
+    type: string
+    description: The application git repository url
+    default: https://github.com/oliveira-shiai/spring-artemis-producer-v2  # URL do repositório da sua aplicação
+  - name: SOURCE_GIT_REVISION
+    type: string
+    default: main  # Revisão padrão do Git
+    description: The application git repository revision
+  - name: SOURCE_GIT_CONTEXT_DIR
+    type: string
+    default: spring-artemis-producer  # Diretório de contexto da aplicação
+    description: The subdirectory in the git repository
+  - name: NAMESPACE
+    type: string
+    description: Namespace where the BuildConfig is located
+    default: app-spring  # Namespace correto para o BuildConfig
+  - name: KUSTOMIZE_GIT_URL
+    type: string
+    description: The kustomize git repository URL
+    default: https://github.com/oliveira-shiai/spring-artemis-producer-v2  # URL do repositório GitOps
+  - name: KUSTOMIZE_GIT_REVISION
+    type: string
+    description: The kustomize git repository revision
+    default: main  # Revisão do Git para GitOps
+  - name: KUSTOMIZE_GIT_CONTEXT_DIR
+    type: string
+    description: The subdirectory in the kustomize git repository
+    default: overlays/production  # Diretório dentro do repositório GitOps
+
   workspaces:
-    - name: workspace
+  - name: app-source
+  - name: maven-settings
+
+  tasks:
+  - name: git-clone
+    taskRef:
+      kind: ClusterTask
+      name: git-clone
+    params:
+    - name: url
+      value: $(params.SOURCE_GIT_URL)
+    - name: revision
+      value: $(params.SOURCE_GIT_REVISION)
+    - name: deleteExisting
+      value: 'true'
+    workspaces:
+    - name: output
+      workspace: app-source
+
+  - name: build-maven
+    runAfter:
+    - git-clone
+    taskRef:
+      kind: ClusterTask
+      name: maven
+    params:
+    - name: MAVEN_IMAGE
+      value: registry.access.redhat.com/ubi8/openjdk-11-runtime  # Imagem OpenJDK correta para build
+    - name: CONTEXT_DIR
+      value: $(params.SOURCE_GIT_CONTEXT_DIR)
+    - name: GOALS
+      value:
+      - clean
+      - compile
+      - package
+      - -DskipTests
+    workspaces:
+    - name: source
+      workspace: app-source
+    - name: maven-settings
+      workspace: maven-settings
+
+  - name: build-image
+    runAfter:
+    - build-maven
+    taskRef:
+      kind: Task
+      name: s2i-binary
+    params:
+    - name: FROM_FILE
+      value: $(params.SOURCE_GIT_CONTEXT_DIR)/target/$(params.APP_NAME)-1.0-runner.jar
+    - name: NAMESPACE
+      value: $(params.NAMESPACE)
+    - name: BUILDCONFIG
+      value: $(params.APP_NAME)
+    workspaces:
+    - name: source
+      workspace: app-source
+
+  - name: generate-tag
+    runAfter:
+    - build-maven
+    taskRef:
+      kind: Task
+      name: generate-tag
+
+  - name: tag-image
+    runAfter:
+    - build-image
+    - generate-tag
+    taskRef:
+      kind: ClusterTask
+      name: openshift-client
+    params:
+    - name: SCRIPT
+      value: >-
+        oc tag
+        $(params.NAMESPACE)/$(params.APP_NAME):latest
+        $(params.NAMESPACE)/$(params.APP_NAME):$(tasks.generate-tag.results.image-tag)
+
+  - name: update-image
+    runAfter:
+    - tag-image
+    taskRef:
+      kind: Task
+      name: update-kustomize-repo
+    params:
+    - name: gitRepositoryUrl
+      value: $(params.KUSTOMIZE_GIT_URL)
+    - name: gitRepositoryRevision
+      value: $(params.KUSTOMIZE_GIT_REVISION)
+    - name: gitPath
+      value: $(params.KUSTOMIZE_GIT_CONTEXT_DIR)
+    - name: image
+      value: image-registry.openshift-image-registry.svc:5000/$(params.NAMESPACE)/$(params.APP_NAME)
+    - name: imageTag
+      value: $(tasks.generate-tag.results.image-tag)
+    - name: verbose
+      value: 'true'
