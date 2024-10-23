@@ -3,7 +3,7 @@ kind: Pipeline
 metadata:
   name: spring-artemis-pipeline
   namespace: app-spring
-  serviceAccountName: openshift-pipelines-operator
+  serviceAccountName: pipeline
 spec:
   tasks:
     - name: build-image
