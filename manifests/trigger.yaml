@@ -4,6 +4,11 @@ metadata:
   name: pipeline-trigger-template
   namespace: app-spring
 spec:
+  params:  # Adicionada a seção de parâmetros
+    - name: git-revision
+      description: A referência do Git que deve ser usada
+    - name: git-repository-url
+      description: A URL do repositório Git
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -18,9 +23,10 @@ spec:
               claimName: pvc-workspace  # Assegure-se que esse PVC exista
         params:
           - name: git-revision
-            value: $(tt.params.git-revision)
+            value: $(tt.params.git-revision)  # Referência agora declarada corretamente
           - name: git-repository-url
-            value: $(tt.params.git-repository-url)
+            value: $(tt.params.git-repository-url)  # Referência agora declarada corretamente
+
 
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
@@ -32,9 +38,9 @@ spec:
   serviceAccountName: pipeline  # Corrigido para ter a indentação correta
   params:
     - name: git-revision
-      value: $(body.head_commit.id)
+      value: $(body.head_commit.id)  # Captura o ID do commit
     - name: git-repository-url
-      value: $(body.repository.git_url)
+      value: $(body.repository.git_url)  # Captura a URL do repositório
 
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
