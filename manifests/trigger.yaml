@@ -48,4 +48,4 @@ spec:
         ref: pipeline-trigger-template  # Nome do TriggerTemplate
       bindings:
         - ref: git-trigger-binding       # Nome do TriggerBinding
-  serviceAccountName: pipeline  # Verifique se esta ServiceAccount existe e tem permissões adequadas
+  serviceAccountName: openshift-pipelines-operator  # Verifique se esta ServiceAccount existe e tem permissões adequadas
