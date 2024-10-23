@@ -1,20 +1,46 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   name: spring-artemis-producer-pipelinerun
-  namespace: app-spring  # Namespace correto
+  namespace: app-spring  
+  labels:
+    app.kubernetes.io/instance: spring-artemis-producer
+    app.kubernetes.io/name: spring-artemis-producer
+    operator.tekton.dev/operand-name: openshift-pipelines-addons
+    pipeline.openshift.io/runtime: java
+    pipeline.openshift.io/runtime-version: openjdk-17-ubi8
+    pipeline.openshift.io/type: kubernetes
+    tekton.dev/pipeline: spring-artemis-producer
 spec:
-  pipelineRef:
-    name: spring-artemis-pipeline  # Nome da sua Pipeline
   params:
-    - name: git-url
-      value: https://github.com/oliveira-shiai/spring-artemis-producer-v2  # URL do seu repositório Git
-    - name: git-revision
-      value: HEAD  # O branch principal a ser utilizado
-    - name: IMAGE
-      value: image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer:latest  # Imagem no registro interno do OpenShift
+    - name: APP_NAME
+      value: spring-artemis-producer
+    - name: GIT_REPO
+      value: 'https://github.com/oliveira-shiai/spring-artemis-producer-v2.git'
+    - name: GIT_REVISION
+      value: ''
+    - name: IMAGE_NAME
+      value: 'image-registry.openshift-image-registry.svc:5000/app-spring/spring-artemis-producer-v-2-git'
+    - name: PATH_CONTEXT
+      value: .
+    - name: VERSION
+      value: openjdk-17-ubi8
+  pipelineRef:
+    name: spring-artemis-producer
+  taskRunTemplate:
+    serviceAccountName: pipeline
+  timeouts:
+    pipeline: 1h0m0s
   workspaces:
-    - name: shared-workspace  # Nome do workspace que você definiu na Pipeline
-      persistentVolumeClaim:
-        claimName: pvc-workspace  # PVC que deve ser criado para armazenar o workspace compartilhado
-  timeout: "1h"  # Defina um tempo limite para o pipeline (opcional)
+    - name: workspace
+      volumeClaimTemplate:
+        metadata:
+          creationTimestamp: null
+          labels:
+            tekton.dev/pipeline: spring-artemis-producer
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
