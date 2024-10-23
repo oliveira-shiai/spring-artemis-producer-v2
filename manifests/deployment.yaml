@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: spring-artemis-producer
   namespace: app-spring
-  serviceAccountName: pipeline  
   labels:
     app: spring-artemis-producer
 spec:
